@@ -82,6 +82,16 @@ Set up CMake Toolchain variables with a new CMake Profile (in CMake options) - y
 then build from there and serve the static content within `<build directory>/client/` with any static HTTP server.
 
 ## Platform Quirks
+### macOS
+When opening the app for the first time after downloading from GitHub, macOS Gatekeeper may show a warning because the app is not notarized. To open the app:
+
+**Option 1 (Recommended):** Right-click (or Control-click) on the app, then select "Open" from the context menu. Click "Open" in the dialog that appears.
+
+**Option 2:** Remove the quarantine attribute via Terminal:
+```bash
+xattr -cr /path/to/SonyHeadphonesClient.app
+```
+
 ### Linux
 On Linux, you may not see player metadata (track title, artist, etc.) despite correct output from `playerctl metadata` command
 while your device having proper AVRCP support (e.g. works on other platforms).

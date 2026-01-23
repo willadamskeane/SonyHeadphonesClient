@@ -105,12 +105,30 @@ jobs:
         echo "=== Contents of build/client ==="
         ls -la
         echo "=== Structure of .app bundle ==="
-        find SonyHeadphonesClient.app -type f | head -20
+        find SonyHeadphonesClient.app -type f
+
+        # Ensure the main executable has proper permissions
+        chmod +x "SonyHeadphonesClient.app/Contents/MacOS/SonyHeadphonesClient"
+
+        # Ad-hoc code sign the app bundle
+        # This creates a valid signature structure which prevents the "damaged" error
+        # Users will still need to right-click > Open or use xattr -cr to bypass Gatekeeper
+        # but the app won't appear as "damaged"
+        echo "=== Ad-hoc signing the app bundle ==="
+        codesign --force --deep -s - SonyHeadphonesClient.app
+
+        # Verify the signature
+        echo "=== Verifying code signature ==="
+        codesign -vvv --deep --strict SonyHeadphonesClient.app || echo "Note: Ad-hoc signature won't pass strict verification but app will run"
+        codesign -dv SonyHeadphonesClient.app
+
         # Use ditto to create a zip that preserves the .app bundle structure
         # --keepParent is critical to include the .app folder name in the zip
+        echo "=== Creating zip with ditto ==="
         ditto -c -k --sequesterRsrc --keepParent SonyHeadphonesClient.app SonyHeadphonesClient.zip
+
         echo "=== Zip contents (should show SonyHeadphonesClient.app at root) ==="
-        unzip -l SonyHeadphonesClient.zip | head -20
+        unzip -l SonyHeadphonesClient.zip | head -30
 
     - name: Upload a Build Artifact (macOS)
       if: runner.os == 'macOS'
