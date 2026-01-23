@@ -101,8 +101,16 @@ jobs:
       if: runner.os == 'macOS'
       working-directory: ${{github.workspace}}/build/client
       run: |
-        # Create a zip that preserves the .app bundle structure
-        zip -r SonyHeadphonesClient.zip SonyHeadphonesClient.app
+        # Debug: show what we have
+        echo "=== Contents of build/client ==="
+        ls -la
+        echo "=== Structure of .app bundle ==="
+        find SonyHeadphonesClient.app -type f | head -20
+        # Use ditto to create a zip that preserves the .app bundle structure
+        # --keepParent is critical to include the .app folder name in the zip
+        ditto -c -k --sequesterRsrc --keepParent SonyHeadphonesClient.app SonyHeadphonesClient.zip
+        echo "=== Zip contents (should show SonyHeadphonesClient.app at root) ==="
+        unzip -l SonyHeadphonesClient.zip | head -20
 
     - name: Upload a Build Artifact (macOS)
       if: runner.os == 'macOS'
