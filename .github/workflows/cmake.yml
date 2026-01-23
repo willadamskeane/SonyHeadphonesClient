@@ -97,7 +97,30 @@ jobs:
       # Strip symbols from the binary to reduce size
       run: strip --strip-unneeded ${{matrix.binary_path}}
 
-    - name: Upload a Build Artifact
+    - name: Package macOS App Bundle
+      if: runner.os == 'macOS'
+      working-directory: ${{github.workspace}}/build/client
+      run: |
+        # Debug: show what we have
+        echo "=== Contents of build/client ==="
+        ls -la
+        echo "=== Structure of .app bundle ==="
+        find SonyHeadphonesClient.app -type f | head -20
+        # Use ditto to create a zip that preserves the .app bundle structure
+        # --keepParent is critical to include the .app folder name in the zip
+        ditto -c -k --sequesterRsrc --keepParent SonyHeadphonesClient.app SonyHeadphonesClient.zip
+        echo "=== Zip contents (should show SonyHeadphonesClient.app at root) ==="
+        unzip -l SonyHeadphonesClient.zip | head -20
+
+    - name: Upload a Build Artifact (macOS)
+      if: runner.os == 'macOS'
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.artifact_name }}
+        path: ${{github.workspace}}/build/client/SonyHeadphonesClient.zip
+
+    - name: Upload a Build Artifact (non-macOS)
+      if: runner.os != 'macOS'
       uses: actions/upload-artifact@v4
       with:
         # Artifact name
